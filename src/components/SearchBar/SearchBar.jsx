@@ -1,26 +1,35 @@
-import React, { Component } from 'react';
-import { Header } from './SearchBar.styled';
+import {
+  Header,
+  SearchForm,
+  SearchFormButton,
+  SearchFormButtonLabel,
+  SearchFormInput,
+} from './SearchBar.styled';
+import propTypes from 'prop-types';
 
-class SearchBar extends Component {
-  render() {
-    return (
-      <Header className="searchbar">
-        <form className="form">
-          <button type="submit" className="button">
-            <span className="button-label">Search</span>
-          </button>
+const SearchBar = ({ onSubmit }) => {
+  return (
+    <Header className="searchbar">
+      <SearchForm className="form" onSubmit={onSubmit}>
+        <SearchFormButton type="submit" className="button">
+          <SearchFormButtonLabel className="button-label">Search</SearchFormButtonLabel>
+        </SearchFormButton>
 
-          <input
-            className="input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-          />
-        </form>
-      </Header>
-    );
-  }
-}
+        <SearchFormInput
+          className="input"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          name="inputToFind"
+        />
+      </SearchForm>
+    </Header>
+  );
+};
 
 export default SearchBar;
+
+SearchBar.propTypes = {
+  onSubmit: propTypes.func,
+};
