@@ -6,7 +6,7 @@ export const ImageGalleryItemStyle = styled.li`
     0px 2px 1px -1px rgba(0, 0, 0, 0.12);
 `;
 
-export const ImageGalleryItemImage = styled.image`
+export const ImageGalleryItemImage = styled.img`
   width: 100%;
   height: 260px;
   object-fit: cover;

@@ -28,5 +28,27 @@ html {
     max-width: 100%;
     height: auto;
   }
+  p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+ul,
+ol {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+button {
+    border: none;
+  background-color: transparent;   
+  cursor: pointer;
+}
 `;
 export default GlobalStyle;

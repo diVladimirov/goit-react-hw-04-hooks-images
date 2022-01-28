@@ -3,27 +3,46 @@ import GlobalStyle from '../constants/GlobalStyle';
 import SearchBar from './SearchBar/SearchBar';
 import { fetchImages } from '../services/pixabayApi';
 import ImageGallery from './Imagegallery/ImageGallery';
+import './App.css';
 
 class App extends Component {
   state = {
     images: [],
     isLoading: false,
     error: null,
+    inputToFind: '',
+    page: 1,
+    status: 'idle',
   };
 
-  async componentDidMount() {
-    // const data = await fetchImages();
-    // console.log(data);
-    this.setState({ isLoading: true });
+  // async componentDidMount() {
+  //   const data = await fetchImages();
+  //   console.log(data);
+  //   this.setState({ isLoading: true });
 
-    try {
-      const images = await fetchImages();
-      this.setState({ images });
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
+  //   try {
+  //     const images = await fetchImages();
+  //     this.setState({ images });
+  //   } catch (error) {
+  //     this.setState({ error });
+  //   } finally {
+  //     this.setState({ isLoading: false });
+  //   }
+  // }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { inputToFind, page } = this.state;
+    const prevInputToFind = prevState.inputToFind;
+    const nextInputToFind = this.state.inputToFind;
+    console.log(prevInputToFind);
+    console.log(nextInputToFind);
+    if (prevInputToFind !== nextInputToFind) {
+      this.setState({ status: 'pending' });
     }
+
+    fetchImages(inputToFind, page).then(response => {
+      this.setState({ images: [...response], status: 'resolved' });
+    });
   }
 
   handleSubmit = event => {
@@ -31,21 +50,54 @@ class App extends Component {
     // console.log(event.target);
     // console.log(event.target.elements.inputToFind.value);
     const form = event.target;
-    form.reset();
+    const inputValue = event.target.elements.inputToFind.value.toLowerCase().trim();
+    // console.log(inputValue);
+    if (inputValue) {
+      this.setState({ inputToFind: inputValue, page: 1 });
+      form.reset();
+    }
   };
 
   render() {
-    const { images } = this.state;
-    console.log(images);
-    return (
-      <>
-        <GlobalStyle />
-        <SearchBar onSubmit={this.handleSubmit} />
-        {this.state.isLoading && <h1>Загружаем</h1>}
-        {this.state.images && <div>AfterFetch</div>}
-        <ImageGallery data={images} />
-      </>
-    );
+    const { images, status } = this.state;
+
+    if (status === 'idle') {
+      return (
+        <>
+          <GlobalStyle />
+          <SearchBar onSubmit={this.handleSubmit} />
+        </>
+      );
+    }
+
+    if (status === 'pending') {
+      return (
+        <>
+          <GlobalStyle />
+          <SearchBar onSubmit={this.handleSubmit} />
+          <p>Loading</p>
+        </>
+      );
+    }
+
+    if (status === 'resolved') {
+      return (
+        <>
+          <GlobalStyle />
+          <SearchBar onSubmit={this.handleSubmit} />
+          <ImageGallery data={images} />
+        </>
+      );
+    }
+    // return (
+    //   <>
+    //     <GlobalStyle />
+    //     <SearchBar onSubmit={this.handleSubmit} />
+    //     {this.state.isLoading && <h1>Загружаем</h1>}
+    //     {this.state.images.length > 0 && <div>AfterFetch</div>}
+    //     <ImageGallery data={images} />
+    //   </>
+    // );
   }
 }
 
