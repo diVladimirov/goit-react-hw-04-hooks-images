@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.84c79b47.css","mappings":"AAAA,KAGE,aAAc,CAFd,YAAa,CACb,yBAA0B,CAE1B,mBACF","sources":["components/App.css"],"sourcesContent":[".App {\r\n  display: grid;\r\n  grid-template-columns: 1fr;\r\n  grid-gap: 16px;\r\n  padding-bottom: 24px;\r\n}\r\n"],"names":[],"sourceRoot":""}
