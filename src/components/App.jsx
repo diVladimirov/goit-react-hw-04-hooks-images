@@ -3,7 +3,10 @@ import GlobalStyle from '../constants/GlobalStyle';
 import SearchBar from './SearchBar/SearchBar';
 import { fetchImages } from '../services/pixabayApi';
 import ImageGallery from './Imagegallery/ImageGallery';
-import './App.css';
+import Button from './Button/Button';
+import Loader from './Loader/Loader';
+import { AppStyled } from './App.styled';
+import Modal from './Modal/Modal';
 
 class App extends Component {
   state = {
@@ -13,37 +16,51 @@ class App extends Component {
     inputToFind: '',
     page: 1,
     status: 'idle',
+    showModal: false,
   };
 
-  // async componentDidMount() {
-  //   const data = await fetchImages();
-  //   console.log(data);
-  //   this.setState({ isLoading: true });
-
-  //   try {
-  //     const images = await fetchImages();
-  //     this.setState({ images });
-  //   } catch (error) {
-  //     this.setState({ error });
-  //   } finally {
-  //     this.setState({ isLoading: false });
-  //   }
-  // }
-
   componentDidUpdate(prevProps, prevState) {
-    const { inputToFind, page } = this.state;
     const prevInputToFind = prevState.inputToFind;
     const nextInputToFind = this.state.inputToFind;
-    console.log(prevInputToFind);
-    console.log(nextInputToFind);
-    if (prevInputToFind !== nextInputToFind) {
+    const prevPage = prevState.page;
+    const nextPage = this.state.page;
+    if (prevInputToFind !== nextInputToFind || prevPage !== nextPage) {
       this.setState({ status: 'pending' });
+      setTimeout(() => {
+        this.finderImages();
+      }, 200);
+    }
+    console.log(document.documentElement.scrollHeight);
+    if (nextPage > 1) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }
+
+  finderImages = async () => {
+    const { inputToFind, page } = this.state;
+
+    try {
+      const data = await fetchImages(inputToFind, page);
+
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data],
+        status: 'resolved',
+        error: null,
+      }));
+    } catch (error) {
+      console.log(error.message);
+      this.setState({ status: 'rejected' });
     }
 
-    fetchImages(inputToFind, page).then(response => {
-      this.setState({ images: [...response], status: 'resolved' });
-    });
-  }
+    // fetchImages(inputToFind, page)
+    //   .then(response => {
+    //     this.setState({ images: [...response], status: 'resolved' });
+    //   })
+    //   .catch(error => this.setState({ error, status: 'rejected' }));
+  };
 
   handleSubmit = event => {
     event.preventDefault();
@@ -53,19 +70,35 @@ class App extends Component {
     const inputValue = event.target.elements.inputToFind.value.toLowerCase().trim();
     // console.log(inputValue);
     if (inputValue) {
-      this.setState({ inputToFind: inputValue, page: 1 });
+      this.setState({ inputToFind: inputValue, page: 1, images: [] });
       form.reset();
     }
   };
 
+  handleButtonClick = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+    console.log(this.state.page);
+  };
+
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+    }));
+  };
+
   render() {
-    const { images, status } = this.state;
+    const { images, status, showModal } = this.state;
 
     if (status === 'idle') {
       return (
         <>
           <GlobalStyle />
-          <SearchBar onSubmit={this.handleSubmit} />
+          <AppStyled>
+            <SearchBar onSubmit={this.handleSubmit} />
+          </AppStyled>
+          {showModal && <Modal />}
         </>
       );
     }
@@ -74,8 +107,22 @@ class App extends Component {
       return (
         <>
           <GlobalStyle />
-          <SearchBar onSubmit={this.handleSubmit} />
-          <p>Loading</p>
+          <AppStyled>
+            <SearchBar onSubmit={this.handleSubmit} />
+            <Loader />
+          </AppStyled>
+        </>
+      );
+    }
+
+    if (status === 'rejected') {
+      return (
+        <>
+          <GlobalStyle />
+          <AppStyled>
+            <SearchBar onSubmit={this.handleSubmit} />
+            <p>Fail</p>
+          </AppStyled>
         </>
       );
     }
@@ -84,31 +131,15 @@ class App extends Component {
       return (
         <>
           <GlobalStyle />
-          <SearchBar onSubmit={this.handleSubmit} />
-          <ImageGallery data={images} />
+          <AppStyled>
+            <SearchBar onSubmit={this.handleSubmit} />
+            <ImageGallery data={images} />
+            <Button onClick={this.handleButtonClick} />
+          </AppStyled>
         </>
       );
     }
-    // return (
-    //   <>
-    //     <GlobalStyle />
-    //     <SearchBar onSubmit={this.handleSubmit} />
-    //     {this.state.isLoading && <h1>Загружаем</h1>}
-    //     {this.state.images.length > 0 && <div>AfterFetch</div>}
-    //     <ImageGallery data={images} />
-    //   </>
-    // );
   }
 }
 
 export default App;
-
-// componentDidMount() {
-//   this.setState({ isLoading: true });
-//   fetch(
-//     'https://pixabay.com/api/?q=cat&page=1&key=24332293-f673b61ccd63539823a678f1a&image_type=photo&orientation=horizontal&per_page=12',
-//   )
-//     .then(res => res.json())
-//     .then(cat => this.setState({ cat }))
-//     .finally(() => this.setState({ isLoading: false }));
-// }

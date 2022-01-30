@@ -11,7 +11,3 @@ export const fetchImages = async (query, page) => {
   );
   return response.data.hits;
 };
-
-// ?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${PER_PAGE}
-
-// ?q=cat&page=1&${API_KEY}&image_type=photo&orientation=horizontal&per_page=12
