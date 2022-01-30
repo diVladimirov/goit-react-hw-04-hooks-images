@@ -11,7 +11,6 @@ import Modal from './Modal/Modal';
 class App extends Component {
   state = {
     images: [],
-    isLoading: false,
     error: null,
     inputToFind: '',
     page: 1,
@@ -30,7 +29,7 @@ class App extends Component {
         this.finderImages();
       }, 200);
     }
-    console.log(document.documentElement.scrollHeight);
+
     if (nextPage > 1) {
       window.scrollTo({
         top: document.documentElement.scrollHeight,
@@ -54,18 +53,10 @@ class App extends Component {
       console.log(error.message);
       this.setState({ status: 'rejected' });
     }
-
-    // fetchImages(inputToFind, page)
-    //   .then(response => {
-    //     this.setState({ images: [...response], status: 'resolved' });
-    //   })
-    //   .catch(error => this.setState({ error, status: 'rejected' }));
   };
 
   handleSubmit = event => {
     event.preventDefault();
-    // console.log(event.target);
-    // console.log(event.target.elements.inputToFind.value);
     const form = event.target;
     const inputValue = event.target.elements.inputToFind.value.toLowerCase().trim();
     // console.log(inputValue);
@@ -79,7 +70,6 @@ class App extends Component {
     this.setState(prevState => ({
       page: prevState.page + 1,
     }));
-    console.log(this.state.page);
   };
 
   toggleModal = () => {
@@ -88,8 +78,13 @@ class App extends Component {
     }));
   };
 
+  handleOpenModal = (largeImageURL, tags) => {
+    this.toggleModal();
+    this.setState({ modalLargeImage: largeImageURL, modalLargeAlt: tags });
+  };
+
   render() {
-    const { images, status, showModal } = this.state;
+    const { images, status, showModal, modalLargeImage, modalLargeAlt } = this.state;
 
     if (status === 'idle') {
       return (
@@ -98,7 +93,6 @@ class App extends Component {
           <AppStyled>
             <SearchBar onSubmit={this.handleSubmit} />
           </AppStyled>
-          {showModal && <Modal />}
         </>
       );
     }
@@ -133,9 +127,12 @@ class App extends Component {
           <GlobalStyle />
           <AppStyled>
             <SearchBar onSubmit={this.handleSubmit} />
-            <ImageGallery data={images} />
+            <ImageGallery data={images} onClick={this.handleOpenModal} />
             <Button onClick={this.handleButtonClick} />
           </AppStyled>
+          {showModal && (
+            <Modal src={modalLargeImage} alt={modalLargeAlt} onClose={this.toggleModal} />
+          )}
         </>
       );
     }

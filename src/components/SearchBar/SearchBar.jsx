@@ -1,3 +1,5 @@
+import React from 'react';
+
 import {
   Header,
   SearchForm,
@@ -9,14 +11,13 @@ import propTypes from 'prop-types';
 
 const SearchBar = ({ onSubmit }) => {
   return (
-    <Header className="searchbar">
-      <SearchForm className="form" onSubmit={onSubmit}>
-        <SearchFormButton type="submit" className="button">
-          <SearchFormButtonLabel className="button-label">Search</SearchFormButtonLabel>
+    <Header>
+      <SearchForm onSubmit={onSubmit}>
+        <SearchFormButton type="submit">
+          <SearchFormButtonLabel>Search</SearchFormButtonLabel>
         </SearchFormButton>
 
         <SearchFormInput
-          className="input"
           type="text"
           autoComplete="off"
           autoFocus
