@@ -7,6 +7,9 @@ import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import { AppStyled } from './App.styled';
 import Modal from './Modal/Modal';
+import { ToastContainer, toast } from 'react-toastify';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 class App extends Component {
   state = {
@@ -44,26 +47,45 @@ class App extends Component {
     try {
       const data = await fetchImages(inputToFind, page);
 
+      if (data.length === 0) {
+        toast.error('Sorry, there are no images matching your search query. Please try again.');
+        this.setState({ status: 'rejected' });
+        return;
+      }
+
+      const images = this.createsArrayOfImageProperties(data);
+
       this.setState(prevState => ({
-        images: [...prevState.images, ...data],
+        images: [...prevState.images, ...images],
         status: 'resolved',
         error: null,
       }));
     } catch (error) {
       console.log(error.message);
+      console.log('fail');
       this.setState({ status: 'rejected' });
     }
   };
 
-  handleSubmit = event => {
-    event.preventDefault();
-    const form = event.target;
-    const inputValue = event.target.elements.inputToFind.value.toLowerCase().trim();
-    // console.log(inputValue);
-    if (inputValue) {
-      this.setState({ inputToFind: inputValue, page: 1, images: [] });
-      form.reset();
-    }
+  createsArrayOfImageProperties = data => {
+    return data.map(({ id, largeImageURL, tags, webformatURL }) => {
+      return { id, largeImageURL, tags, webformatURL };
+    });
+  };
+
+  // handleSubmit = event => {
+  //   event.preventDefault();
+  //   const form = event.target;
+  //   const inputValue = event.target.elements.inputToFind.value.toLowerCase().trim();
+  //   // console.log(inputValue);
+  //   if (inputValue) {
+  //     this.setState({ inputToFind: inputValue, page: 1, images: [] });
+  //     form.reset();
+  //   }
+  // };
+
+  handleSubmit = inputToFind => {
+    return this.setState({ inputToFind, page: 1, images: [] });
   };
 
   handleButtonClick = () => {
@@ -115,7 +137,14 @@ class App extends Component {
           <GlobalStyle />
           <AppStyled>
             <SearchBar onSubmit={this.handleSubmit} />
-            <p>Fail</p>
+            <ToastContainer
+              position="top-center"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+            />
           </AppStyled>
         </>
       );

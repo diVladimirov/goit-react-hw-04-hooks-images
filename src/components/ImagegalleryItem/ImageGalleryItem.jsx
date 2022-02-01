@@ -19,10 +19,10 @@ export default ImageGalleryItem;
 ImageGalleryItem.propTypes = {
   data: propTypes.arrayOf(
     propTypes.shape({
-      id: propTypes.number,
-      webformatURL: propTypes.string,
-      tags: propTypes.string,
-      largeImageURL: propTypes.string,
+      id: propTypes.number.isRequired,
+      webformatURL: propTypes.string.isRequired,
+      tags: propTypes.string.isRequired,
+      largeImageURL: propTypes.string.isRequired,
     }),
   ),
 };
