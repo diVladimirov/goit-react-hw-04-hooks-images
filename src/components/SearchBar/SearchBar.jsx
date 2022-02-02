@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 
 import {
   Header,
@@ -9,53 +9,93 @@ import {
 } from './SearchBar.styled';
 import propTypes from 'prop-types';
 
-class SearchBar extends Component {
-  state = {
-    inputToFind: '',
+const SearchBar = ({ onSubmit }) => {
+  const [inputToFind, setInputToFind] = useState('');
+
+  const handleInputChange = event => {
+    setInputToFind(event.target.value);
   };
 
-  static = {
-    onSubmit: propTypes.func.isRequired,
-  };
-
-  handleInputChange = event => {
-    this.setState({ inputToFind: event.target.value });
-  };
-
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
-    if (this.state.inputToFind.toLowerCase().trim() === '') {
+    if (inputToFind.toLocaleLowerCase().trim() === '') {
       return;
     }
-    this.props.onSubmit(this.state.inputToFind);
-    this.resetForm();
+    onSubmit(inputToFind);
+    resetForm();
   };
 
-  resetForm = () => {
-    this.setState({ inputToFind: '' });
+  const resetForm = () => {
+    setInputToFind('');
   };
 
-  render() {
-    return (
-      <Header>
-        <SearchForm onSubmit={this.handleSubmit}>
-          <SearchFormButton type="submit">
-            <SearchFormButtonLabel>Search</SearchFormButtonLabel>
-          </SearchFormButton>
+  return (
+    <Header>
+      <SearchForm onSubmit={handleSubmit}>
+        <SearchFormButton type="submit">
+          <SearchFormButtonLabel>Search</SearchFormButtonLabel>
+        </SearchFormButton>
 
-          <SearchFormInput
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            name="inputToFind"
-            onChange={this.handleInputChange}
-          />
-        </SearchForm>
-      </Header>
-    );
-  }
-}
+        <SearchFormInput
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          name="inputToFind"
+          onChange={handleInputChange}
+        />
+      </SearchForm>
+    </Header>
+  );
+};
+
+// class SearchBar extends Component {
+//   state = {
+//     inputToFind: '',
+//   };
+
+//   static = {
+//     onSubmit: propTypes.func.isRequired,
+//   };
+
+//   handleInputChange = event => {
+//     this.setState({ inputToFind: event.target.value });
+//   };
+
+//   handleSubmit = event => {
+//     event.preventDefault();
+//     if (this.state.inputToFind.toLowerCase().trim() === '') {
+//       return;
+//     }
+//     this.props.onSubmit(this.state.inputToFind);
+//     this.resetForm();
+//   };
+
+//   resetForm = () => {
+//     this.setState({ inputToFind: '' });
+//   };
+
+//   render() {
+//     return (
+//       <Header>
+//         <SearchForm onSubmit={this.handleSubmit}>
+//           <SearchFormButton type="submit">
+//             <SearchFormButtonLabel>Search</SearchFormButtonLabel>
+//           </SearchFormButton>
+
+//           <SearchFormInput
+//             type="text"
+//             autoComplete="off"
+//             autoFocus
+//             placeholder="Search images and photos"
+//             name="inputToFind"
+//             onChange={this.handleInputChange}
+//           />
+//         </SearchForm>
+//       </Header>
+//     );
+//   }
+// }
 
 export default SearchBar;
 
