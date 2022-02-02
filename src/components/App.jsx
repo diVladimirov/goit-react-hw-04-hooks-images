@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import GlobalStyle from '../constants/GlobalStyle';
 import SearchBar from './SearchBar/SearchBar';
 import { fetchImages } from '../services/pixabayApi';
@@ -11,161 +11,128 @@ import { ToastContainer, toast } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
 
-class App extends Component {
-  state = {
-    images: [],
-    error: null,
-    inputToFind: '',
-    page: 1,
-    status: 'idle',
-    showModal: false,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [inputToFind, setInputToFind] = useState('');
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('idle');
+  const [showModal, setShowModal] = useState(false);
+  const [modalLargeImage, setModalLargeImage] = useState('');
+  const [modalLargeAlt, setModalLargeAlt] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevInputToFind = prevState.inputToFind;
-    const nextInputToFind = this.state.inputToFind;
-    const prevPage = prevState.page;
-    const nextPage = this.state.page;
-    if (prevInputToFind !== nextInputToFind || prevPage !== nextPage) {
-      this.setState({ status: 'pending' });
-      setTimeout(() => {
-        this.finderImages();
-      }, 200);
-    }
+  // state = {
+  //   images: [],
+  //   error: null,
+  //   inputToFind: '',
+  //   page: 1,
+  //   status: 'idle',
+  //   showModal: false,
+  // };
 
-    if (nextPage > 1) {
+  useEffect(() => {
+    if (page > 1) {
       window.scrollTo({
         top: document.documentElement.scrollHeight,
         behavior: 'smooth',
       });
     }
-  }
+  }, [page]);
+  // componentDidUpdate(prevProps, prevState) {
+  //   const prevInputToFind = prevState.inputToFind;
+  //   const nextInputToFind = this.state.inputToFind;
+  //   const prevPage = prevState.page;
+  //   const nextPage = this.state.page;
+  //   if (prevInputToFind !== nextInputToFind || prevPage !== nextPage) {
+  //     this.setState({ status: 'pending' });
+  //     setTimeout(() => {
+  //       this.finderImages();
+  //     }, 200);
+  //   }
 
-  finderImages = async () => {
-    const { inputToFind, page } = this.state;
+  //   if (nextPage > 1) {
+  //     window.scrollTo({
+  //       top: document.documentElement.scrollHeight,
+  //       behavior: 'smooth',
+  //     });
+  //   }
+  // }
 
+  const finderImages = async () => {
     try {
       const data = await fetchImages(inputToFind, page);
 
       if (data.length === 0) {
         toast.error('Sorry, there are no images matching your search query. Please try again.');
-        this.setState({ status: 'rejected' });
+        setStatus('rejected');
         return;
       }
 
-      const images = this.createsArrayOfImageProperties(data);
+      const images = createsArrayOfImageProperties(data);
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images],
-        status: 'resolved',
-        error: null,
-      }));
+      setImages(prevState => [...prevState, ...images]);
+      setStatus('resolved');
+      setError(null);
     } catch (error) {
       console.log(error.message);
       console.log('fail');
-      this.setState({ status: 'rejected' });
+      setStatus('rejected');
     }
   };
 
-  createsArrayOfImageProperties = data => {
+  const createsArrayOfImageProperties = data => {
     return data.map(({ id, largeImageURL, tags, webformatURL }) => {
       return { id, largeImageURL, tags, webformatURL };
     });
   };
 
-  // handleSubmit = event => {
-  //   event.preventDefault();
-  //   const form = event.target;
-  //   const inputValue = event.target.elements.inputToFind.value.toLowerCase().trim();
-  //   // console.log(inputValue);
-  //   if (inputValue) {
-  //     this.setState({ inputToFind: inputValue, page: 1, images: [] });
-  //     form.reset();
-  //   }
-  // };
-
-  handleSubmit = inputToFind => {
-    return this.setState({ inputToFind, page: 1, images: [] });
+  const handleSubmit = inputToFind => {
+    setInputToFind(inputToFind);
+    setPage(1);
+    setImages([]);
   };
 
-  handleButtonClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleButtonClick = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  handleOpenModal = (largeImageURL, tags) => {
-    this.toggleModal();
-    this.setState({ modalLargeImage: largeImageURL, modalLargeAlt: tags });
+  const handleOpenModal = (largeImageURL, tags) => {
+    toggleModal();
+
+    setModalLargeImage(largeImageURL);
+    setModalLargeAlt(tags);
   };
 
-  render() {
-    const { images, status, showModal, modalLargeImage, modalLargeAlt } = this.state;
-
-    if (status === 'idle') {
-      return (
-        <>
-          <GlobalStyle />
-          <AppStyled>
-            <SearchBar onSubmit={this.handleSubmit} />
-          </AppStyled>
-        </>
-      );
-    }
-
-    if (status === 'pending') {
-      return (
-        <>
-          <GlobalStyle />
-          <AppStyled>
-            <SearchBar onSubmit={this.handleSubmit} />
-            <Loader />
-          </AppStyled>
-        </>
-      );
-    }
-
-    if (status === 'rejected') {
-      return (
-        <>
-          <GlobalStyle />
-          <AppStyled>
-            <SearchBar onSubmit={this.handleSubmit} />
-            <ToastContainer
-              position="top-center"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-            />
-          </AppStyled>
-        </>
-      );
-    }
-
-    if (status === 'resolved') {
-      return (
-        <>
-          <GlobalStyle />
-          <AppStyled>
-            <SearchBar onSubmit={this.handleSubmit} />
-            <ImageGallery data={images} onClick={this.handleOpenModal} />
-            <Button onClick={this.handleButtonClick} />
-          </AppStyled>
-          {showModal && (
-            <Modal src={modalLargeImage} alt={modalLargeAlt} onClose={this.toggleModal} />
-          )}
-        </>
-      );
-    }
-  }
-}
+  return (
+    <>
+      <GlobalStyle />
+      <AppStyled>
+        <SearchBar onSubmit={handleSubmit} />
+        {status === 'pending' ? <Loader /> : null}
+        {status === 'rejected' ? (
+          <ToastContainer
+            position="top-center"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+          />
+        ) : null}
+        {images.length > 0 && (
+          <>
+            <ImageGallery data={images} onClick={handleOpenModal} />
+            <Button onClick={handleButtonClick} />
+          </>
+        )}
+      </AppStyled>
+      {showModal && <Modal src={modalLargeImage} alt={modalLargeAlt} onClose={toggleModal} />}
+    </>
+  );
+};
 
 export default App;
