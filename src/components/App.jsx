@@ -21,64 +21,43 @@ const App = () => {
   const [modalLargeImage, setModalLargeImage] = useState('');
   const [modalLargeAlt, setModalLargeAlt] = useState('');
 
-  // state = {
-  //   images: [],
-  //   error: null,
-  //   inputToFind: '',
-  //   page: 1,
-  //   status: 'idle',
-  //   showModal: false,
-  // };
-
   useEffect(() => {
-    if (page > 1) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
+    if (inputToFind === '') {
+      return;
     }
-  }, [page]);
-  // componentDidUpdate(prevProps, prevState) {
-  //   const prevInputToFind = prevState.inputToFind;
-  //   const nextInputToFind = this.state.inputToFind;
-  //   const prevPage = prevState.page;
-  //   const nextPage = this.state.page;
-  //   if (prevInputToFind !== nextInputToFind || prevPage !== nextPage) {
-  //     this.setState({ status: 'pending' });
-  //     setTimeout(() => {
-  //       this.finderImages();
-  //     }, 200);
-  //   }
+    setStatus('pending');
 
-  //   if (nextPage > 1) {
-  //     window.scrollTo({
-  //       top: document.documentElement.scrollHeight,
-  //       behavior: 'smooth',
-  //     });
-  //   }
-  // }
+    const finderImages = async () => {
+      try {
+        const data = await fetchImages(inputToFind, page);
 
-  const finderImages = async () => {
-    try {
-      const data = await fetchImages(inputToFind, page);
+        if (data.length === 0) {
+          toast.error('Sorry, there are no images matching your search query. Please try again.');
+          setStatus('rejected');
+          return;
+        }
 
-      if (data.length === 0) {
-        toast.error('Sorry, there are no images matching your search query. Please try again.');
+        const images = createsArrayOfImageProperties(data);
+
+        setImages(prevState => [...prevState, ...images]);
+        setStatus('resolved');
+        setError(null);
+
+        if (page > 1) {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      } catch (error) {
+        console.log(error.message);
+        console.log('fail');
         setStatus('rejected');
-        return;
       }
+    };
 
-      const images = createsArrayOfImageProperties(data);
-
-      setImages(prevState => [...prevState, ...images]);
-      setStatus('resolved');
-      setError(null);
-    } catch (error) {
-      console.log(error.message);
-      console.log('fail');
-      setStatus('rejected');
-    }
-  };
+    finderImages();
+  }, [inputToFind, page]);
 
   const createsArrayOfImageProperties = data => {
     return data.map(({ id, largeImageURL, tags, webformatURL }) => {
